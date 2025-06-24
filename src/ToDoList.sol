@@ -31,6 +31,7 @@ error TaskIsCompleted();
 error NoTaskFound();
 error IndexNotFound();
 error NotYetUser();
+error ForbiddenUseChangeOwnerFunction();
 
 constructor(){
 newTaskId = 1;
@@ -59,12 +60,32 @@ modifier validAddress(address _addr){
     _;
 }
 
+function stripCurrentOwnerRights()internal{
+    _revokeRole(DEFAULT_ADMIN_ROLE, msg.sender);
+_revokeRole(ADMIN_ROLE, msg.sender);
+}
+
+function grantNewOwnerRights(address _addr)internal{
+    _grantRole(DEFAULT_ADMIN_ROLE, _addr);
+    _grantRole(ADMIN_ROLE, _addr);
+}
+
+function changeOwner(address _addr)external validAddress(_addr){
+stripCurrentOwnerRights();
+grantNewOwnerRights(_addr);
+}
+
 function assignRole(bytes32 role, address addr)public validAddress(addr){
     grantRole(role, addr);
 }
                          
 function revokeRoleOfAdmin(bytes32 role, address addr) public validAddress(addr){
 revokeRole(role, addr);
+}
+
+function renounceMyRole(bytes32 role)public{
+    require(role!=DEFAULT_ADMIN_ROLE, ForbiddenUseChangeOwnerFunction());
+renounceRole(role, msg.sender);
 }
 
 // This function helps users add new tasks.

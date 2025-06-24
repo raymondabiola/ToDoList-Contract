@@ -35,6 +35,65 @@ contract ToDoListTest is Test{
         bytes32 adminRole = todo.ADMIN_ROLE();
         assertTrue(todo.hasRole(adminRole, owner));
     }
+
+    function testChangeOwner()public{
+     bytes32 defaultAdmin = todo.DEFAULT_ADMIN_ROLE();  
+     bytes32 adminRole = todo.ADMIN_ROLE();
+     assertTrue(todo.hasRole(defaultAdmin, owner));
+     assertTrue(todo.hasRole(adminRole, owner));
+
+     vm.expectRevert(ToDoList.InvalidAddress.selector);
+     todo.changeOwner(zeroAddress);
+        
+     todo.changeOwner(user2);
+     assertFalse(todo.hasRole(defaultAdmin, owner));
+     assertFalse(todo.hasRole(adminRole, owner));
+     assertTrue(todo.hasRole(defaultAdmin, user2));
+     assertTrue(todo.hasRole(adminRole, user2));
+    }
+
+    function testAssignRole()public{
+    bytes32 role = todo.ADMIN_ROLE();
+
+    todo.assignRole(role, user1);
+    assertTrue(todo.hasRole(role, user1));
+
+    vm.expectRevert(ToDoList.InvalidAddress.selector);
+    todo.assignRole(role, zeroAddress);
+
+    vm.startPrank(user1);
+    vm.expectRevert();
+    todo.assignRole(role, user1);
+}
+
+function testRevokeRole()public{
+    bytes32 defaultAdmin = todo.DEFAULT_ADMIN_ROLE();
+    bytes32 role = todo.ADMIN_ROLE();
+    todo.assignRole(role, user1);
+    assertTrue(todo.hasRole(role, user1));
+    todo.revokeRoleOfAdmin(role, user1);
+    assertFalse(todo.hasRole(role, user1));
+
+    vm.startPrank(user1);
+    vm.expectRevert();
+    todo.revokeRoleOfAdmin(defaultAdmin, owner);
+}
+
+function testRenounceMyRole()public{
+bytes32 defaultAdmin = todo.DEFAULT_ADMIN_ROLE();
+bytes32 role = todo.ADMIN_ROLE();
+    todo.assignRole(role, user1);
+    assertTrue(todo.hasRole(role, user1));
+
+    vm.startPrank(user1);
+    todo.renounceMyRole(role);
+    assertFalse(todo.hasRole(role, user1));
+    vm.stopPrank();
+
+    vm.expectRevert(ToDoList.ForbiddenUseChangeOwnerFunction.selector);
+    todo.renounceMyRole(defaultAdmin);
+}
+
     function testAddTask()public{
         string memory description = "learning foundry";
         string memory desc1 = "";
@@ -112,16 +171,6 @@ contract ToDoListTest is Test{
 
         vm.expectRevert(ToDoList.InvalidIndex.selector);
         todo.delTask(3);
-}
-
-function testAssignRole()public{
-    bytes32 role = todo.ADMIN_ROLE();
-
-    todo.assignRole(role, user1);
-    assertTrue(todo.hasRole(role, user1));
-
-    vm.expectRevert(ToDoList.InvalidAddress.selector);
-    todo.assignRole(role, zeroAddress);
 }
 
 function testBanUser()public{
