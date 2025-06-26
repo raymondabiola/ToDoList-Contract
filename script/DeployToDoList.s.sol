@@ -8,7 +8,10 @@ contract DeployToDoList is Script {
 function run() external {
     uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
     vm.startBroadcast(deployerPrivateKey);
-    new ToDoList();
+    ToDoList todo = new ToDoList();
     vm.stopBroadcast();
+
+    vm.serializeAddress("addressLabelInMemory", "ToDoList", address(todo));
+    vm.writeJson("deployments/sepolia.json", "addressLabelInMemory");
 }
 }
