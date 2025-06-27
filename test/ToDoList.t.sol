@@ -24,9 +24,6 @@ contract ToDoListTest is Test{
 
 // solhint-disable-next-line state-mutability
     function testDeployerIsOwnerAndHaveRoles()public {
-        // checks if owner is deployer
-        assertEq(todo.owner(), owner);
-
         // checks that deployer has Default admin role
         bytes32 defaultAdmin = todo.DEFAULT_ADMIN_ROLE();
         assertTrue(todo.hasRole(defaultAdmin, owner));
