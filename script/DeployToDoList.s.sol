@@ -10,8 +10,7 @@ function run() external {
     vm.startBroadcast(deployerPrivateKey);
     ToDoList todo = new ToDoList();
     vm.stopBroadcast();
-
-    vm.serializeAddress("addressLabelInMemory", "ToDoList", address(todo));
-    vm.writeJson("deployments/sepolia.json", "addressLabelInMemory");
+    
+    console.log("ToDoList contract deployed at", address(todo));
 }
 }
